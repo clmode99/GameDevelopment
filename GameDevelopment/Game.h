@@ -4,6 +4,12 @@
 
 #pragma once
 
+/* インクルードファイル */
+#include <CommonStates.h>
+#include <SpriteBatch.h>
+#include <SpriteFont.h>
+#include <SimpleMath.h>
+
 #include "StepTimer.h"
 
 
@@ -62,4 +68,13 @@ private:
 
     // Rendering loop timer.
     DX::StepTimer                                   m_timer;
+
+	std::unique_ptr<DirectX::SpriteBatch>  m_sprite_batch;
+	std::unique_ptr<DirectX::SpriteFont>   m_sprite_font;
+	std::unique_ptr<DirectX::CommonStates> m_states;
+	std::wstring                          m_wstr;
+
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_texture;
+	DirectX::SimpleMath::Vector2 m_screen_pos;		// 画面の座標
+	DirectX::SimpleMath::Vector2 m_origin;			// スプライトの原点座標
 };

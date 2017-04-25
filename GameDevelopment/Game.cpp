@@ -2,11 +2,17 @@
 // Game.cpp
 //
 
+#include <sstream>
+
 #include "pch.h"
 #include "Game.h"
 
+#include <DDSTextureLoader.h>
+#include <WICTextureLoader.h>
+
 extern void ExitGame();
 
+using namespace std;
 using namespace DirectX;
 
 using Microsoft::WRL::ComPtr;
@@ -36,6 +42,34 @@ void Game::Initialize(HWND window, int width, int height)
     m_timer.SetFixedTimeStep(true);
     m_timer.SetTargetElapsedSeconds(1.0 / 60);
     */
+
+	m_sprite_batch = make_unique<SpriteBatch>(m_d3dContext.Get());
+	m_sprite_font  = make_unique<SpriteFont>(m_d3dDevice.Get(), L"Resources/myfile.spritefont");
+	m_states       = make_unique<CommonStates>(m_d3dDevice.Get());
+
+
+	ComPtr<ID3D11Resource> resource;
+	DX::ThrowIfFailed(
+		CreateWICTextureFromFile(m_d3dDevice.Get(), L"Resources/cat.png",
+			resource.GetAddressOf(),
+			m_texture.ReleaseAndGetAddressOf()));
+
+	//DX::ThrowIfFailed(
+	//	CreateDDSTextureFromFile(m_d3dDevice.Get(), L"Resources/cat.dds",
+	//		resource.GetAddressOf(),
+	//		m_texture.ReleaseAndGetAddressOf()));
+
+	ComPtr<ID3D11Texture2D> cat;
+	DX::ThrowIfFailed(resource.As(&cat));
+
+	CD3D11_TEXTURE2D_DESC catDesc;		// スプライト情報
+	cat->GetDesc(&catDesc);				// 情報を取得
+
+	m_origin.x = float(catDesc.Width / 2);		// 原点を中心に設定
+	m_origin.y = float(catDesc.Height / 2);
+
+	m_screen_pos.x = m_outputWidth / 2.f;		// 画面の中心に描画するの設定
+	m_screen_pos.y = m_outputHeight / 2.f;
 }
 
 // Executes the basic game loop.
@@ -56,6 +90,12 @@ void Game::Update(DX::StepTimer const& timer)
 
     // TODO: Add your game logic here.
     elapsedTime;
+
+	wstringstream ss;
+	ss << L"Hello World!" << endl;
+
+	m_wstr = ss.str();
+
 }
 
 // Draws the scene.
@@ -69,7 +109,16 @@ void Game::Render()
 
     Clear();
 
+	static int angle = 0;
+	angle -= 2;
+
     // TODO: Add your rendering code here.
+	m_sprite_batch->Begin(SpriteSortMode_Deferred, m_states->NonPremultiplied());
+	
+	m_sprite_batch->Draw(m_texture.Get(), m_screen_pos, nullptr, Colors::White, XMConvertToRadians(angle), m_origin, 1.0f);
+	m_sprite_font ->DrawString(m_sprite_batch.get(), m_wstr.c_str(), XMFLOAT2(100, 100));
+
+	m_sprite_batch->End();
 
     Present();
 }
