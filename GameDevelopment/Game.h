@@ -6,6 +6,7 @@
 
 /* インクルードファイル */
 #include <CommonStates.h>
+#include <Mouse.h>
 #include <SpriteBatch.h>
 #include <SpriteFont.h>
 #include <SimpleMath.h>
@@ -77,4 +78,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_texture;
 	DirectX::SimpleMath::Vector2 m_screen_pos;		// 画面の座標
 	DirectX::SimpleMath::Vector2 m_origin;			// スプライトの原点座標
+
+	std::unique_ptr<DirectX::Mouse>    m_mouse;		// マウス
+	DirectX::Mouse::ButtonStateTracker m_tracker;
 };

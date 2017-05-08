@@ -70,6 +70,9 @@ void Game::Initialize(HWND window, int width, int height)
 
 	m_screen_pos.x = m_outputWidth / 2.f;		// 画面の中心に描画するの設定
 	m_screen_pos.y = m_outputHeight / 2.f;
+
+	m_mouse = make_unique<Mouse>();
+	m_mouse->SetWindow(m_window);		// ウインドウハンドラ(hwnd)を渡す
 }
 
 // Executes the basic game loop.
@@ -92,10 +95,29 @@ void Game::Update(DX::StepTimer const& timer)
     elapsedTime;
 
 	wstringstream ss;
-	ss << L"Hello World!" << endl;
+
+	auto state = m_mouse->GetState();		// マウスの状態を取得する
+
+	m_tracker.Update(state);
+
+	if (m_tracker.leftButton == Mouse::ButtonStateTracker::PRESSED)
+		ss << L"Mouse Pressed!" << endl;
+	else
+		ss << endl;
+
+	m_screen_pos = SimpleMath::Vector2(state.x, state.y);
+
+	//// マウスモード切替
+	//if (m_tracker.leftButton == Mouse::ButtonStateTracker::ButtonState::PRESSED)
+	//{
+	//	m_mouse->SetMode(Mouse::MODE_RELATIVE);		// 相対モード
+	//}
+	//else if (m_tracker.leftButton == Mouse::ButtonStateTracker::ButtonState::RELEASED)
+	//{
+	//	m_mouse->SetMode(Mouse::MODE_ABSOLUTE);		// 絶対モード
+	//}
 
 	m_wstr = ss.str();
-
 }
 
 // Draws the scene.
