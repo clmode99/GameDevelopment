@@ -10,6 +10,9 @@
 #include <DDSTextureLoader.h>
 #include <WICTextureLoader.h>
 
+#include "ADX2Le.h"
+#include "Resources\Music\WorkUnit_0\CueSheet_0.h"
+
 extern void ExitGame();
 
 using namespace std;
@@ -23,6 +26,11 @@ Game::Game() :
     m_outputHeight(600),
     m_featureLevel(D3D_FEATURE_LEVEL_9_1)
 {
+}
+
+Game::~Game()
+{
+	ADX2Le::Finalize();
 }
 
 // Initialize the Direct3D resources required to run.
@@ -43,10 +51,12 @@ void Game::Initialize(HWND window, int width, int height)
     m_timer.SetTargetElapsedSeconds(1.0 / 60);
     */
 
+	ADX2Le::Initialize("Resources/Music/Test.acf");
+	ADX2Le::LoadAcb("Resources/Music/WorkUnit_0/CueSheet_0.acb");
+
 	m_sprite_batch = make_unique<SpriteBatch>(m_d3dContext.Get());
 	m_sprite_font  = make_unique<SpriteFont>(m_d3dDevice.Get(), L"Resources/myfile.spritefont");
 	m_states       = make_unique<CommonStates>(m_d3dDevice.Get());
-
 
 	ComPtr<ID3D11Resource> resource;
 	DX::ThrowIfFailed(
@@ -73,6 +83,8 @@ void Game::Initialize(HWND window, int width, int height)
 
 	m_mouse = make_unique<Mouse>();
 	m_mouse->SetWindow(m_window);		// ウインドウハンドラ(hwnd)を渡す
+
+	ADX2Le::Play(CRI_CUESHEET_0_CLEAR);
 }
 
 // Executes the basic game loop.
@@ -93,6 +105,8 @@ void Game::Update(DX::StepTimer const& timer)
 
     // TODO: Add your game logic here.
     elapsedTime;
+
+	ADX2Le::Update();
 
 	wstringstream ss;
 
