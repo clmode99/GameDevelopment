@@ -6,6 +6,7 @@
 
 /* インクルードファイル */
 #include <CommonStates.h>
+#include <GamePad.h>
 #include <Mouse.h>
 #include <SpriteBatch.h>
 #include <SpriteFont.h>
@@ -13,6 +14,19 @@
 
 #include "StepTimer.h"
 
+enum MODE
+{
+	M01,
+	M02,
+};
+
+enum STATE
+{
+	ATTACK,
+	DEFENSE,
+
+	NONE
+};
 
 // A basic game implementation that creates a D3D11 device and
 // provides a game loop.
@@ -82,4 +96,10 @@ private:
 
 	std::unique_ptr<DirectX::Mouse>    m_mouse;		// マウス
 	DirectX::Mouse::ButtonStateTracker m_tracker;
+
+	std::unique_ptr<DirectX::GamePad> m_gamepad;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_attack;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_defense;
+	MODE m_mode;
+	STATE m_state;
 };

@@ -25,6 +25,12 @@
     <Image Include="directx.ico">
       <Filter>Assets</Filter>
     </Image>
+    <Image Include="Assets\attack.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\defense.png">
+      <Filter>Assets</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="settings.manifest">

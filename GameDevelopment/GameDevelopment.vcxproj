@@ -198,6 +198,8 @@
   </ItemGroup>
   <ItemGroup>
     <ImageContentTask Include="Assets\cat.png" />
+    <Image Include="Assets\attack.png" />
+    <Image Include="Assets\defense.png" />
     <Image Include="directx.ico" />
   </ItemGroup>
   <ItemGroup>

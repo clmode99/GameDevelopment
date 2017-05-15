@@ -63,6 +63,14 @@ void Game::Initialize(HWND window, int width, int height)
 		CreateWICTextureFromFile(m_d3dDevice.Get(), L"Resources/cat.png",
 			resource.GetAddressOf(),
 			m_texture.ReleaseAndGetAddressOf()));
+	DX::ThrowIfFailed(
+		CreateWICTextureFromFile(m_d3dDevice.Get(), L"Resources/attack.png",
+			resource.GetAddressOf(),
+			m_attack.ReleaseAndGetAddressOf()));
+	DX::ThrowIfFailed(
+		CreateWICTextureFromFile(m_d3dDevice.Get(), L"Resources/defense.png",
+			resource.GetAddressOf(),
+			m_defense.ReleaseAndGetAddressOf()));
 
 	//DX::ThrowIfFailed(
 	//	CreateDDSTextureFromFile(m_d3dDevice.Get(), L"Resources/cat.dds",
@@ -84,7 +92,11 @@ void Game::Initialize(HWND window, int width, int height)
 	m_mouse = make_unique<Mouse>();
 	m_mouse->SetWindow(m_window);		// ウインドウハンドラ(hwnd)を渡す
 
-	ADX2Le::Play(CRI_CUESHEET_0_CLEAR);
+	m_gamepad = make_unique<GamePad>();
+	m_mode = MODE::M01;
+	m_state = STATE::NONE;
+
+	//ADX2Le::Play(CRI_CUESHEET_0_CLEAR);
 }
 
 // Executes the basic game loop.
@@ -110,16 +122,16 @@ void Game::Update(DX::StepTimer const& timer)
 
 	wstringstream ss;
 
-	auto state = m_mouse->GetState();		// マウスの状態を取得する
+	//auto state = m_mouse->GetState();		// マウスの状態を取得する
 
-	m_tracker.Update(state);
+	/*m_tracker.Update(state);
 
 	if (m_tracker.leftButton == Mouse::ButtonStateTracker::PRESSED)
 		ss << L"Mouse Pressed!" << endl;
 	else
 		ss << endl;
 
-	m_screen_pos = SimpleMath::Vector2(state.x, state.y);
+	m_screen_pos = SimpleMath::Vector2(state.x, state.y);*/
 
 	//// マウスモード切替
 	//if (m_tracker.leftButton == Mouse::ButtonStateTracker::ButtonState::PRESSED)
@@ -131,7 +143,41 @@ void Game::Update(DX::StepTimer const& timer)
 	//	m_mouse->SetMode(Mouse::MODE_ABSOLUTE);		// 絶対モード
 	//}
 
+	switch (m_mode)
+	{
+	case MODE::M01:
+		ss << "MODE:1" << endl;
+		break;
+
+	case MODE::M02:
+		ss << "MODE:2" << endl;
+		break;
+	}
 	m_wstr = ss.str();
+
+	auto state = m_gamepad->GetState(0);
+
+	if (!state.IsConnected())		// コントローラの接続確認
+		return;
+
+	m_state = STATE::NONE;		// 初期化
+
+	if (state.buttons.a)			// Aボタンが押されてるか
+	{
+		if (m_mode == MODE::M01)	m_state = STATE::ATTACK;
+		if (m_mode == MODE::M02)	m_state = STATE::DEFENSE;
+	}
+	if (state.buttons.b)
+	{
+		if (m_mode == MODE::M01)	m_state = STATE::DEFENSE;
+		if (m_mode == MODE::M02)	m_state = STATE::ATTACK;
+	}
+
+	if (state.buttons.back)		// モード切替
+	{
+		m_mode == MODE::M01 ? m_mode = MODE::M02 : m_mode = MODE::M01;
+	}
+
 }
 
 // Draws the scene.
@@ -147,13 +193,26 @@ void Game::Render()
 
 	static int angle = 0;
 	angle -= 2;
-
     // TODO: Add your rendering code here.
 	m_sprite_batch->Begin(SpriteSortMode_Deferred, m_states->NonPremultiplied());
 	
-	m_sprite_batch->Draw(m_texture.Get(), m_screen_pos, nullptr, Colors::White, XMConvertToRadians(angle), m_origin, 1.0f);
-	m_sprite_font ->DrawString(m_sprite_batch.get(), m_wstr.c_str(), XMFLOAT2(100, 100));
+	//m_sprite_batch->Draw(m_texture.Get(), m_screen_pos, nullptr, Colors::White, XMConvertToRadians(angle), m_origin, 1.0f);
+	
+	switch (m_state)
+	{
+	case STATE::ATTACK:
+		m_sprite_batch->Draw(m_attack.Get(), m_screen_pos, nullptr, Colors::White, 0.0f, DirectX::SimpleMath::Vector2(800 / 2, 746 / 2), 1.0f);
+		break;
 
+	case STATE::DEFENSE:
+		m_sprite_batch->Draw(m_defense.Get(), m_screen_pos, nullptr, Colors::White, 0.0f, DirectX::SimpleMath::Vector2(449 / 2, 800 / 2), 1.0f);
+		break;
+
+	default:
+		break;
+	}
+
+	m_sprite_font->DrawString(m_sprite_batch.get(), m_wstr.c_str(), XMFLOAT2(700, 25));
 	m_sprite_batch->End();
 
     Present();
